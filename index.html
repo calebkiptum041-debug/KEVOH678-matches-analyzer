@@ -1,26 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Deriv Real Market Analyzer</title>
+    <title>Deriv Real Market Matches Analyzer</title>
 
     <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            background: #f1f5f9;
             margin: 0;
             padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #eef2f7;
         }
 
         .container {
-            max-width: 1050px;
+            max-width: 1100px;
             margin: auto;
             background: white;
             padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.10);
+            border-radius: 16px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.10);
         }
 
         h1 {
@@ -31,22 +37,21 @@
         .subtitle {
             text-align: center;
             color: #64748b;
+            margin-bottom: 25px;
         }
 
         label {
             display: block;
-            margin-top: 20px;
             font-weight: bold;
+            margin-bottom: 8px;
         }
 
         select,
         button {
             width: 100%;
             padding: 14px;
-            margin-top: 8px;
             border-radius: 8px;
             font-size: 16px;
-            box-sizing: border-box;
         }
 
         select {
@@ -55,6 +60,7 @@
         }
 
         button {
+            margin-top: 12px;
             border: none;
             background: #2563eb;
             color: white;
@@ -69,15 +75,25 @@
         .status {
             margin-top: 15px;
             padding: 14px;
-            background: #e2e8f0;
             border-radius: 8px;
+            background: #e2e8f0;
             text-align: center;
+            font-weight: bold;
+        }
+
+        .error {
+            display: none;
+            margin-top: 15px;
+            padding: 14px;
+            border-radius: 8px;
+            background: #fee2e2;
+            color: #991b1b;
             font-weight: bold;
         }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
             gap: 15px;
             margin-top: 20px;
         }
@@ -89,29 +105,29 @@
             border-radius: 10px;
         }
 
-        .label {
+        .label-small {
             color: #64748b;
             font-size: 14px;
         }
 
         .value {
+            margin-top: 7px;
             font-size: 25px;
             font-weight: bold;
-            margin-top: 7px;
         }
 
         .digits {
             margin-top: 20px;
             padding: 18px;
+            border-radius: 10px;
             background: #111827;
             color: white;
-            border-radius: 10px;
             line-height: 2;
             word-break: break-word;
         }
 
         .frequency {
-            margin-top: 20px;
+            margin-top: 25px;
         }
 
         .frequency-grid {
@@ -121,10 +137,10 @@
         }
 
         .digit-box {
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
             padding: 15px;
             text-align: center;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
             border-radius: 8px;
         }
 
@@ -133,174 +149,254 @@
             font-weight: bold;
         }
 
+        .digit-count {
+            margin-top: 5px;
+            color: #475569;
+        }
+
         .note {
-            margin-top: 20px;
+            margin-top: 25px;
             padding: 15px;
+            border-radius: 8px;
             background: #fff7ed;
             color: #7c2d12;
-            border-radius: 8px;
             font-size: 14px;
         }
 
-        .error {
-            margin-top: 15px;
-            padding: 12px;
-            background: #fee2e2;
-            color: #991b1b;
-            border-radius: 8px;
-            display: none;
-        }
     </style>
+
 </head>
+
 
 <body>
 
 <div class="container">
 
-    <h1>Deriv Real Market Analyzer</h1>
+    <h1>Deriv Real Market Matches Analyzer</h1>
 
     <p class="subtitle">
-        Real Volatility Indices • Matches-only analysis
+        Real Volatility Indices • Live tick analysis • Matches only
     </p>
 
+
     <label for="market">
-        Select Real Volatility Market
+        Select Volatility Market
     </label>
 
     <select id="market">
+
         <option value="">
             Loading real Deriv markets...
         </option>
+
     </select>
+
 
     <button onclick="startAnalysis()">
         START LIVE ANALYSIS
     </button>
 
+
     <div id="status" class="status">
-        Connecting to Deriv...
+        Connecting to Deriv market data...
     </div>
 
+
     <div id="error" class="error"></div>
+
 
     <div class="grid">
 
         <div class="card">
-            <div class="label">Market</div>
-            <div id="selectedMarket" class="value">-</div>
+
+            <div class="label-small">
+                Selected Market
+            </div>
+
+            <div id="selectedMarket" class="value">
+                -
+            </div>
+
         </div>
 
-        <div class="card">
-            <div class="label">Current Price</div>
-            <div id="price" class="value">-</div>
-        </div>
 
         <div class="card">
-            <div class="label">Last Digit</div>
-            <div id="lastDigit" class="value">-</div>
+
+            <div class="label-small">
+                Current Price
+            </div>
+
+            <div id="price" class="value">
+                -
+            </div>
+
         </div>
 
-        <div class="card">
-            <div class="label">Ticks Analyzed</div>
-            <div id="tickCount" class="value">0</div>
-        </div>
 
         <div class="card">
-            <div class="label">Matches Found</div>
-            <div id="matches" class="value">0</div>
+
+            <div class="label-small">
+                Last Digit
+            </div>
+
+            <div id="lastDigit" class="value">
+                -
+            </div>
+
         </div>
 
-        <div class="card">
-            <div class="label">Match Percentage</div>
-            <div id="matchPercentage" class="value">0%</div>
-        </div>
 
         <div class="card">
-            <div class="label">Current Gap</div>
-            <div id="currentGap" class="value">0</div>
+
+            <div class="label-small">
+                Ticks Analyzed
+            </div>
+
+            <div id="tickCount" class="value">
+                0
+            </div>
+
         </div>
 
+
         <div class="card">
-            <div class="label">Maximum Gap</div>
-            <div id="maximumGap" class="value">0</div>
+
+            <div class="label-small">
+                Matches Found
+            </div>
+
+            <div id="matches" class="value">
+                0
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="label-small">
+                Match Percentage
+            </div>
+
+            <div id="matchPercentage" class="value">
+                0%
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="label-small">
+                Current Gap
+            </div>
+
+            <div id="currentGap" class="value">
+                0
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <div class="label-small">
+                Maximum Gap
+            </div>
+
+            <div id="maximumGap" class="value">
+                0
+            </div>
+
         </div>
 
     </div>
+
 
     <div class="digits">
 
-        <strong>Recent Digits</strong>
+        <strong>
+            Recent Digits
+        </strong>
 
         <div id="recentDigits">
-            Waiting for real market ticks...
+            Waiting for live ticks...
         </div>
 
     </div>
 
+
     <div class="frequency">
 
-        <h3>Digit Frequency</h3>
+        <h3>
+            Digit Frequency
+        </h3>
+
 
         <div class="frequency-grid">
 
             <div class="digit-box">
                 <div class="digit-number">0</div>
-                <div id="freq-0">0</div>
+                <div id="freq0" class="digit-count">0</div>
             </div>
 
             <div class="digit-box">
                 <div class="digit-number">1</div>
-                <div id="freq-1">0</div>
+                <div id="freq1" class="digit-count">0</div>
             </div>
 
             <div class="digit-box">
                 <div class="digit-number">2</div>
-                <div id="freq-2">0</div>
+                <div id="freq2" class="digit-count">0</div>
             </div>
 
             <div class="digit-box">
                 <div class="digit-number">3</div>
-                <div id="freq-3">0</div>
+                <div id="freq3" class="digit-count">0</div>
             </div>
 
             <div class="digit-box">
                 <div class="digit-number">4</div>
-                <div id="freq-4">0</div>
+                <div id="freq4" class="digit-count">0</div>
             </div>
 
             <div class="digit-box">
                 <div class="digit-number">5</div>
-                <div id="freq-5">0</div>
+                <div id="freq5" class="digit-count">0</div>
             </div>
 
             <div class="digit-box">
                 <div class="digit-number">6</div>
-                <div id="freq-6">0</div>
+                <div id="freq6" class="digit-count">0</div>
             </div>
 
             <div class="digit-box">
                 <div class="digit-number">7</div>
-                <div id="freq-7">0</div>
+                <div id="freq7" class="digit-count">0</div>
             </div>
 
             <div class="digit-box">
                 <div class="digit-number">8</div>
-                <div id="freq-8">0</div>
+                <div id="freq8" class="digit-count">0</div>
             </div>
 
             <div class="digit-box">
                 <div class="digit-number">9</div>
-                <div id="freq-9">0</div>
+                <div id="freq9" class="digit-count">0</div>
             </div>
 
         </div>
 
     </div>
 
+
     <div class="note">
-        This tool analyzes real Deriv market tick data.
-        It does not guarantee future contract outcomes
-        and does not place trades.
+
+        This tool uses public Deriv market-data feeds.
+        It analyzes historical and live tick information.
+        It does not place trades and does not guarantee
+        future contract outcomes.
+
     </div>
 
 </div>
@@ -308,7 +404,15 @@
 
 <script>
 
+
+/* =====================================================
+   GLOBAL VARIABLES
+===================================================== */
+
+
 let socket = null;
+
+let selectedSymbol = "";
 
 let digits = [];
 
@@ -318,23 +422,24 @@ let currentGap = 0;
 
 let maximumGap = 0;
 
-let frequency = {
-    0: 0,
-    1: 0,
-    2: 0,
-    3: 0,
-    4: 0,
-    5: 0,
-    6: 0,
-    7: 0,
-    8: 0,
-    9: 0
-};
+let frequency = [
+    0,0,0,0,0,0,0,0,0,0
+];
 
 
-/*
-    Show error
-*/
+/* =====================================================
+   DERIV PUBLIC WEBSOCKET
+===================================================== */
+
+
+const DERIV_WEBSOCKET =
+    "wss://api.derivws.com/trading/v1/options/ws/public";
+
+
+/* =====================================================
+   SHOW ERROR
+===================================================== */
+
 
 function showError(message) {
 
@@ -347,9 +452,10 @@ function showError(message) {
 }
 
 
-/*
-    Clear error
-*/
+/* =====================================================
+   CLEAR ERROR
+===================================================== */
+
 
 function clearError() {
 
@@ -362,264 +468,10 @@ function clearError() {
 }
 
 
-/*
-    Connect to Deriv public market data
-*/
+/* =====================================================
+   RESET ANALYSIS
+===================================================== */
 
-function connectToDeriv() {
-
-    document.getElementById("status")
-        .textContent =
-        "Connecting to real Deriv market data...";
-
-    /*
-        Deriv public market-data WebSocket
-    */
-
-    socket =
-        new WebSocket(
-            "wss://ws.binaryws.com/websockets/v3"
-        );
-
-
-    socket.onopen = function() {
-
-        document.getElementById("status")
-            .textContent =
-            "Connected — loading real Volatility markets...";
-
-
-        /*
-            Ask Deriv for active markets
-        */
-
-        socket.send(JSON.stringify({
-
-            active_symbols: "brief",
-
-            product_type: "basic",
-
-            req_id: 1
-
-        }));
-
-    };
-
-
-    socket.onmessage = function(event) {
-
-        const data =
-            JSON.parse(event.data);
-
-
-        /*
-            Real active market list
-        */
-
-        if (
-            data.msg_type ===
-            "active_symbols"
-        ) {
-
-            loadVolatilityMarkets(
-                data.active_symbols
-            );
-
-            return;
-        }
-
-
-        /*
-            Real live tick
-        */
-
-        if (
-            data.msg_type ===
-            "tick"
-        ) {
-
-            if (
-                data.tick &&
-                data.tick.quote !== undefined
-            ) {
-
-                processTick(
-                    data.tick.quote
-                );
-            }
-
-            return;
-        }
-
-
-        /*
-            API error
-        */
-
-        if (data.error) {
-
-            showError(
-                data.error.message ||
-                "Deriv API error"
-            );
-
-            document.getElementById("status")
-                .textContent =
-                "Deriv connection error.";
-
-        }
-
-    };
-
-
-    socket.onerror = function() {
-
-        showError(
-            "Unable to connect to Deriv market data."
-        );
-
-        document.getElementById("status")
-            .textContent =
-            "Connection error.";
-
-    };
-
-
-    socket.onclose = function() {
-
-        document.getElementById("status")
-            .textContent =
-            "Connection closed.";
-
-    };
-
-}
-
-
-/*
-    Find real Volatility Indices
-*/
-
-function loadVolatilityMarkets(symbols) {
-
-    const select =
-        document.getElementById("market");
-
-    select.innerHTML = "";
-
-
-    const volatilityMarkets =
-        symbols.filter(function(item) {
-
-            const text =
-                (
-                    item.display_name ||
-                    item.underlying_symbol_name ||
-                    ""
-                ).toLowerCase();
-
-            const market =
-                (
-                    item.market ||
-                    ""
-                ).toLowerCase();
-
-            return (
-                text.includes("volatility") ||
-                market.includes("volatility")
-            );
-
-        });
-
-
-    /*
-        If no markets were found
-    */
-
-    if (
-        volatilityMarkets.length === 0
-    ) {
-
-        select.innerHTML = `
-            <option value="">
-                No Volatility markets found
-            </option>
-        `;
-
-        document.getElementById("status")
-            .textContent =
-            "No Volatility markets returned by Deriv.";
-
-        return;
-    }
-
-
-    /*
-        Sort alphabetically
-    */
-
-    volatilityMarkets.sort(function(a, b) {
-
-        const nameA =
-            a.display_name ||
-            a.underlying_symbol_name ||
-            "";
-
-        const nameB =
-            b.display_name ||
-            b.underlying_symbol_name ||
-            "";
-
-        return nameA.localeCompare(nameB);
-
-    });
-
-
-    /*
-        Add real markets to dropdown
-    */
-
-    volatilityMarkets.forEach(function(item) {
-
-        const symbol =
-            item.symbol ||
-            item.underlying_symbol;
-
-        const name =
-            item.display_name ||
-            item.underlying_symbol_name ||
-            symbol;
-
-
-        if (!symbol) {
-            return;
-        }
-
-
-        const option =
-            document.createElement("option");
-
-        option.value = symbol;
-
-        option.textContent =
-            name + " (" + symbol + ")";
-
-        select.appendChild(option);
-
-    });
-
-
-    document.getElementById("status")
-        .textContent =
-        volatilityMarkets.length +
-        " real Volatility markets loaded. Select one and start analysis.";
-
-}
-
-
-/*
-    Reset statistics
-*/
 
 function resetAnalysis() {
 
@@ -631,18 +483,9 @@ function resetAnalysis() {
 
     maximumGap = 0;
 
-    frequency = {
-        0: 0,
-        1: 0,
-        2: 0,
-        3: 0,
-        4: 0,
-        5: 0,
-        6: 0,
-        7: 0,
-        8: 0,
-        9: 0
-    };
+    frequency = [
+        0,0,0,0,0,0,0,0,0,0
+    ];
 
 
     document.getElementById("price")
@@ -668,13 +511,13 @@ function resetAnalysis() {
 
     document.getElementById("recentDigits")
         .textContent =
-        "Waiting for real market ticks...";
+        "Waiting for live ticks...";
 
 
-    for (let i = 0; i <= 9; i++) {
+    for (let i = 0; i < 10; i++) {
 
         document.getElementById(
-            "freq-" + i
+            "freq" + i
         ).textContent = "0";
 
     }
@@ -682,20 +525,21 @@ function resetAnalysis() {
 }
 
 
-/*
-    Extract last digit
-*/
+/* =====================================================
+   GET LAST DIGIT
+===================================================== */
+
 
 function getLastDigit(price) {
 
     const text =
         String(price);
 
-    const decimal =
-        text.split(".")[1];
 
+    if (text.includes(".")) {
 
-    if (decimal) {
+        const decimal =
+            text.split(".")[1];
 
         return Number(
             decimal.slice(-1)
@@ -711,9 +555,29 @@ function getLastDigit(price) {
 }
 
 
-/*
-    Process real tick
-*/
+/* =====================================================
+   UPDATE FREQUENCY
+===================================================== */
+
+
+function updateFrequency() {
+
+    for (let i = 0; i < 10; i++) {
+
+        document.getElementById(
+            "freq" + i
+        ).textContent =
+        frequency[i];
+
+    }
+
+}
+
+
+/* =====================================================
+   PROCESS LIVE TICK
+===================================================== */
+
 
 function processTick(price) {
 
@@ -729,16 +593,17 @@ function processTick(price) {
         .textContent = digit;
 
 
-    /*
-        Count digit
-    */
-
     frequency[digit]++;
 
 
     /*
-        Check Matches
+       MATCH TEST
+
+       A match occurs when the current
+       last digit equals the previous
+       last digit.
     */
+
 
     if (digits.length > 0) {
 
@@ -746,9 +611,7 @@ function processTick(price) {
             digits[digits.length - 1];
 
 
-        if (
-            digit === previousDigit
-        ) {
+        if (digit === previousDigit) {
 
             matches++;
 
@@ -757,7 +620,6 @@ function processTick(price) {
         } else {
 
             currentGap++;
-
 
             if (
                 currentGap >
@@ -778,12 +640,11 @@ function processTick(price) {
 
 
     /*
-        Keep last 200 digits
+       Keep the latest 200 digits.
     */
 
-    if (
-        digits.length > 200
-    ) {
+
+    if (digits.length > 200) {
 
         digits.shift();
 
@@ -834,46 +695,404 @@ function processTick(price) {
         digits.join(" ");
 
 
-    /*
-        Update frequency
-    */
-
-    for (let i = 0; i <= 9; i++) {
-
-        document.getElementById(
-            "freq-" + i
-        ).textContent =
-        frequency[i];
-
-    }
+    updateFrequency();
 
 }
 
 
-/*
-    Start analysis
-*/
+/* =====================================================
+   LOAD REAL VOLATILITY MARKETS
+===================================================== */
 
-function startAnalysis() {
 
-    clearError();
+function loadMarkets(symbols) {
 
     const select =
         document.getElementById("market");
 
-    const market =
-        select.value;
+
+    select.innerHTML = "";
 
 
-    if (!market) {
+    /*
+       Find Volatility Index symbols.
+    */
+
+
+    const volatilityMarkets =
+        symbols.filter(function(item) {
+
+            const displayName =
+                String(
+                    item.display_name || ""
+                ).toLowerCase();
+
+
+            const symbolName =
+                String(
+                    item.underlying_symbol_name || ""
+                ).toLowerCase();
+
+
+            const market =
+                String(
+                    item.market || ""
+                ).toLowerCase();
+
+
+            return (
+                displayName.includes(
+                    "volatility"
+                )
+                ||
+                symbolName.includes(
+                    "volatility"
+                )
+                ||
+                market.includes(
+                    "volatility"
+                )
+            );
+
+        });
+
+
+    /*
+       Sort markets alphabetically.
+    */
+
+
+    volatilityMarkets.sort(
+        function(a,b) {
+
+            const nameA =
+                a.display_name ||
+                a.underlying_symbol_name ||
+                a.symbol ||
+                "";
+
+            const nameB =
+                b.display_name ||
+                b.underlying_symbol_name ||
+                b.symbol ||
+                "";
+
+            return nameA.localeCompare(nameB);
+
+        }
+    );
+
+
+    /*
+       Add markets to selector.
+    */
+
+
+    volatilityMarkets.forEach(
+        function(item) {
+
+            const symbol =
+                item.symbol ||
+                item.underlying_symbol;
+
+
+            const name =
+                item.display_name ||
+                item.underlying_symbol_name ||
+                symbol;
+
+
+            if (!symbol) {
+                return;
+            }
+
+
+            const option =
+                document.createElement(
+                    "option"
+                );
+
+
+            option.value =
+                symbol;
+
+
+            option.textContent =
+                name +
+                " (" +
+                symbol +
+                ")";
+
+
+            select.appendChild(
+                option
+            );
+
+        }
+    );
+
+
+    if (
+        volatilityMarkets.length === 0
+    ) {
+
+        select.innerHTML = `
+            <option value="">
+                No Volatility markets found
+            </option>
+        `;
+
+
+        document.getElementById("status")
+            .textContent =
+            "Deriv connected, but no Volatility markets were returned.";
+
+
+        return;
+
+    }
+
+
+    document.getElementById("status")
+        .textContent =
+        volatilityMarkets.length +
+        " real Volatility markets loaded. Select one.";
+
+
+}
+
+
+/* =====================================================
+   CONNECT TO DERIV
+===================================================== */
+
+
+function connectToDeriv() {
+
+    clearError();
+
+
+    document.getElementById("status")
+        .textContent =
+        "Connecting to Deriv real market data...";
+
+
+    try {
+
+        socket =
+            new WebSocket(
+                DERIV_WEBSOCKET
+            );
+
+    }
+
+    catch (error) {
 
         showError(
-            "Please select a real Volatility market."
+            "Browser could not create the Deriv connection."
         );
 
         return;
 
     }
+
+
+    /*
+       CONNECTION OPEN
+    */
+
+
+    socket.onopen = function() {
+
+        document.getElementById("status")
+            .textContent =
+            "Connected to Deriv. Loading real markets...";
+
+
+        /*
+           Ask Deriv for active symbols.
+        */
+
+
+        socket.send(
+            JSON.stringify({
+
+                active_symbols: "brief",
+
+                req_id: 1
+
+            })
+        );
+
+    };
+
+
+    /*
+       RECEIVE DATA
+    */
+
+
+    socket.onmessage =
+    function(event) {
+
+        let data;
+
+
+        try {
+
+            data =
+                JSON.parse(
+                    event.data
+                );
+
+        }
+
+        catch (error) {
+
+            return;
+
+        }
+
+
+        /*
+           API ERROR
+        */
+
+
+        if (data.error) {
+
+            showError(
+                data.error.message ||
+                "Deriv returned an error."
+            );
+
+
+            document.getElementById(
+                "status"
+            ).textContent =
+            "Deriv API error.";
+
+
+            return;
+
+        }
+
+
+        /*
+           ACTIVE SYMBOLS
+        */
+
+
+        if (
+            data.msg_type ===
+            "active_symbols"
+        ) {
+
+            loadMarkets(
+                data.active_symbols || []
+            );
+
+            return;
+
+        }
+
+
+        /*
+           LIVE TICK
+        */
+
+
+        if (
+            data.msg_type ===
+            "tick"
+        ) {
+
+            if (
+                data.tick &&
+                data.tick.quote !== undefined
+            ) {
+
+                processTick(
+                    data.tick.quote
+                );
+
+            }
+
+        }
+
+    };
+
+
+    /*
+       CONNECTION ERROR
+    */
+
+
+    socket.onerror =
+    function() {
+
+        showError(
+            "Unable to connect to Deriv market data."
+        );
+
+
+        document.getElementById(
+            "status"
+        ).textContent =
+        "Connection error.";
+
+    };
+
+
+    /*
+       CONNECTION CLOSED
+    */
+
+
+    socket.onclose =
+    function() {
+
+        document.getElementById(
+            "status"
+        ).textContent =
+        "Deriv connection closed.";
+
+    };
+
+}
+
+
+/* =====================================================
+   START LIVE ANALYSIS
+===================================================== */
+
+
+function startAnalysis() {
+
+    clearError();
+
+
+    const select =
+        document.getElementById("market");
+
+
+    const symbol =
+        select.value;
+
+
+    if (!symbol) {
+
+        showError(
+            "Please select a Volatility market first."
+        );
+
+        return;
+
+    }
+
+
+    selectedSymbol =
+        symbol;
 
 
     const marketName =
@@ -888,40 +1107,61 @@ function startAnalysis() {
     document.getElementById(
         "selectedMarket"
     ).textContent =
-        marketName;
+    marketName;
 
 
-    document.getElementById("status")
-        .textContent =
-        "Subscribing to real-time " +
-        marketName +
-        " ticks...";
+    document.getElementById(
+        "status"
+    ).textContent =
+    "Subscribing to " +
+    marketName +
+    " live ticks...";
 
 
     /*
-        Subscribe to REAL Deriv ticks
+       Subscribe to REAL ticks.
     */
 
-    socket.send(JSON.stringify({
 
-        ticks: market,
+    if (
+        socket &&
+        socket.readyState ===
+        WebSocket.OPEN
+    ) {
 
-        subscribe: 1,
+        socket.send(
+            JSON.stringify({
 
-        req_id: 2
+                ticks: symbol,
 
-    }));
+                subscribe: 1,
+
+                req_id: 2
+
+            })
+        );
+
+
+    } else {
+
+        showError(
+            "Deriv connection is not open. Refresh the page and try again."
+        );
+
+    }
 
 }
 
 
-/*
-    Start connection
-*/
+/* =====================================================
+   START APPLICATION
+===================================================== */
+
 
 connectToDeriv();
 
 </script>
 
 </body>
+
 </html>
