@@ -15,7 +15,7 @@
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1050px;
             margin: auto;
             background: white;
             padding: 25px;
@@ -95,7 +95,7 @@
         }
 
         .value {
-            font-size: 26px;
+            font-size: 25px;
             font-weight: bold;
             margin-top: 7px;
         }
@@ -118,7 +118,6 @@
             display: grid;
             grid-template-columns: repeat(5, 1fr);
             gap: 10px;
-            margin-top: 10px;
         }
 
         .digit-box {
@@ -142,6 +141,15 @@
             border-radius: 8px;
             font-size: 14px;
         }
+
+        .error {
+            margin-top: 15px;
+            padding: 12px;
+            background: #fee2e2;
+            color: #991b1b;
+            border-radius: 8px;
+            display: none;
+        }
     </style>
 </head>
 
@@ -152,15 +160,17 @@
     <h1>Deriv Real Market Analyzer</h1>
 
     <p class="subtitle">
-        Live Volatility Indices • Matches-only statistical analysis
+        Real Volatility Indices • Matches-only analysis
     </p>
 
     <label for="market">
-        Select Volatility Market
+        Select Real Volatility Market
     </label>
 
     <select id="market">
-        <option value="">Loading real markets...</option>
+        <option value="">
+            Loading real Deriv markets...
+        </option>
     </select>
 
     <button onclick="startAnalysis()">
@@ -168,8 +178,10 @@
     </button>
 
     <div id="status" class="status">
-        Loading real Deriv markets...
+        Connecting to Deriv...
     </div>
+
+    <div id="error" class="error"></div>
 
     <div class="grid">
 
@@ -216,33 +228,85 @@
     </div>
 
     <div class="digits">
+
         <strong>Recent Digits</strong>
+
         <div id="recentDigits">
-            Waiting for live ticks...
+            Waiting for real market ticks...
         </div>
+
     </div>
 
     <div class="frequency">
 
         <h3>Digit Frequency</h3>
 
-        <div class="frequency-grid" id="frequencyGrid">
+        <div class="frequency-grid">
+
+            <div class="digit-box">
+                <div class="digit-number">0</div>
+                <div id="freq-0">0</div>
+            </div>
+
+            <div class="digit-box">
+                <div class="digit-number">1</div>
+                <div id="freq-1">0</div>
+            </div>
+
+            <div class="digit-box">
+                <div class="digit-number">2</div>
+                <div id="freq-2">0</div>
+            </div>
+
+            <div class="digit-box">
+                <div class="digit-number">3</div>
+                <div id="freq-3">0</div>
+            </div>
+
+            <div class="digit-box">
+                <div class="digit-number">4</div>
+                <div id="freq-4">0</div>
+            </div>
+
+            <div class="digit-box">
+                <div class="digit-number">5</div>
+                <div id="freq-5">0</div>
+            </div>
+
+            <div class="digit-box">
+                <div class="digit-number">6</div>
+                <div id="freq-6">0</div>
+            </div>
+
+            <div class="digit-box">
+                <div class="digit-number">7</div>
+                <div id="freq-7">0</div>
+            </div>
+
+            <div class="digit-box">
+                <div class="digit-number">8</div>
+                <div id="freq-8">0</div>
+            </div>
+
+            <div class="digit-box">
+                <div class="digit-number">9</div>
+                <div id="freq-9">0</div>
+            </div>
+
         </div>
 
     </div>
 
     <div class="note">
-        This application analyzes real Deriv market tick data.
-        It provides statistical information only and does not
-        guarantee future contract outcomes.
+        This tool analyzes real Deriv market tick data.
+        It does not guarantee future contract outcomes
+        and does not place trades.
     </div>
 
 </div>
 
-<script>
 
-const API_URL =
-    "https://api.deriv.com";
+<script>
 
 let socket = null;
 
@@ -269,39 +333,292 @@ let frequency = {
 
 
 /*
-    Display digit frequency boxes
+    Show error
 */
 
-function createFrequencyBoxes() {
+function showError(message) {
 
-    const grid =
-        document.getElementById("frequencyGrid");
+    const error =
+        document.getElementById("error");
 
-    grid.innerHTML = "";
+    error.textContent = message;
 
-    for (let i = 0; i <= 9; i++) {
-
-        grid.innerHTML += `
-
-            <div class="digit-box">
-
-                <div class="digit-number">
-                    ${i}
-                </div>
-
-                <div id="freq-${i}">
-                    0
-                </div>
-
-            </div>
-
-        `;
-    }
+    error.style.display = "block";
 }
 
 
 /*
-    Reset analysis
+    Clear error
+*/
+
+function clearError() {
+
+    const error =
+        document.getElementById("error");
+
+    error.textContent = "";
+
+    error.style.display = "none";
+}
+
+
+/*
+    Connect to Deriv public market data
+*/
+
+function connectToDeriv() {
+
+    document.getElementById("status")
+        .textContent =
+        "Connecting to real Deriv market data...";
+
+    /*
+        Deriv public market-data WebSocket
+    */
+
+    socket =
+        new WebSocket(
+            "wss://ws.binaryws.com/websockets/v3"
+        );
+
+
+    socket.onopen = function() {
+
+        document.getElementById("status")
+            .textContent =
+            "Connected — loading real Volatility markets...";
+
+
+        /*
+            Ask Deriv for active markets
+        */
+
+        socket.send(JSON.stringify({
+
+            active_symbols: "brief",
+
+            product_type: "basic",
+
+            req_id: 1
+
+        }));
+
+    };
+
+
+    socket.onmessage = function(event) {
+
+        const data =
+            JSON.parse(event.data);
+
+
+        /*
+            Real active market list
+        */
+
+        if (
+            data.msg_type ===
+            "active_symbols"
+        ) {
+
+            loadVolatilityMarkets(
+                data.active_symbols
+            );
+
+            return;
+        }
+
+
+        /*
+            Real live tick
+        */
+
+        if (
+            data.msg_type ===
+            "tick"
+        ) {
+
+            if (
+                data.tick &&
+                data.tick.quote !== undefined
+            ) {
+
+                processTick(
+                    data.tick.quote
+                );
+            }
+
+            return;
+        }
+
+
+        /*
+            API error
+        */
+
+        if (data.error) {
+
+            showError(
+                data.error.message ||
+                "Deriv API error"
+            );
+
+            document.getElementById("status")
+                .textContent =
+                "Deriv connection error.";
+
+        }
+
+    };
+
+
+    socket.onerror = function() {
+
+        showError(
+            "Unable to connect to Deriv market data."
+        );
+
+        document.getElementById("status")
+            .textContent =
+            "Connection error.";
+
+    };
+
+
+    socket.onclose = function() {
+
+        document.getElementById("status")
+            .textContent =
+            "Connection closed.";
+
+    };
+
+}
+
+
+/*
+    Find real Volatility Indices
+*/
+
+function loadVolatilityMarkets(symbols) {
+
+    const select =
+        document.getElementById("market");
+
+    select.innerHTML = "";
+
+
+    const volatilityMarkets =
+        symbols.filter(function(item) {
+
+            const text =
+                (
+                    item.display_name ||
+                    item.underlying_symbol_name ||
+                    ""
+                ).toLowerCase();
+
+            const market =
+                (
+                    item.market ||
+                    ""
+                ).toLowerCase();
+
+            return (
+                text.includes("volatility") ||
+                market.includes("volatility")
+            );
+
+        });
+
+
+    /*
+        If no markets were found
+    */
+
+    if (
+        volatilityMarkets.length === 0
+    ) {
+
+        select.innerHTML = `
+            <option value="">
+                No Volatility markets found
+            </option>
+        `;
+
+        document.getElementById("status")
+            .textContent =
+            "No Volatility markets returned by Deriv.";
+
+        return;
+    }
+
+
+    /*
+        Sort alphabetically
+    */
+
+    volatilityMarkets.sort(function(a, b) {
+
+        const nameA =
+            a.display_name ||
+            a.underlying_symbol_name ||
+            "";
+
+        const nameB =
+            b.display_name ||
+            b.underlying_symbol_name ||
+            "";
+
+        return nameA.localeCompare(nameB);
+
+    });
+
+
+    /*
+        Add real markets to dropdown
+    */
+
+    volatilityMarkets.forEach(function(item) {
+
+        const symbol =
+            item.symbol ||
+            item.underlying_symbol;
+
+        const name =
+            item.display_name ||
+            item.underlying_symbol_name ||
+            symbol;
+
+
+        if (!symbol) {
+            return;
+        }
+
+
+        const option =
+            document.createElement("option");
+
+        option.value = symbol;
+
+        option.textContent =
+            name + " (" + symbol + ")";
+
+        select.appendChild(option);
+
+    });
+
+
+    document.getElementById("status")
+        .textContent =
+        volatilityMarkets.length +
+        " real Volatility markets loaded. Select one and start analysis.";
+
+}
+
+
+/*
+    Reset statistics
 */
 
 function resetAnalysis() {
@@ -327,53 +644,75 @@ function resetAnalysis() {
         9: 0
     };
 
-    document.getElementById("price").textContent = "-";
 
-    document.getElementById("lastDigit").textContent = "-";
+    document.getElementById("price")
+        .textContent = "-";
 
-    document.getElementById("tickCount").textContent = "0";
+    document.getElementById("lastDigit")
+        .textContent = "-";
 
-    document.getElementById("matches").textContent = "0";
+    document.getElementById("tickCount")
+        .textContent = "0";
 
-    document.getElementById("matchPercentage").textContent = "0%";
+    document.getElementById("matches")
+        .textContent = "0";
 
-    document.getElementById("currentGap").textContent = "0";
+    document.getElementById("matchPercentage")
+        .textContent = "0%";
 
-    document.getElementById("maximumGap").textContent = "0";
+    document.getElementById("currentGap")
+        .textContent = "0";
 
-    document.getElementById("recentDigits").textContent =
-        "Waiting for live ticks...";
+    document.getElementById("maximumGap")
+        .textContent = "0";
 
-    createFrequencyBoxes();
+    document.getElementById("recentDigits")
+        .textContent =
+        "Waiting for real market ticks...";
+
+
+    for (let i = 0; i <= 9; i++) {
+
+        document.getElementById(
+            "freq-" + i
+        ).textContent = "0";
+
+    }
+
 }
 
 
 /*
-    Get the final digit of the quoted price
+    Extract last digit
 */
 
 function getLastDigit(price) {
 
-    const text = String(price);
+    const text =
+        String(price);
 
-    const parts = text.split(".");
+    const decimal =
+        text.split(".")[1];
 
-    if (parts.length === 1) {
+
+    if (decimal) {
 
         return Number(
-            parts[0].slice(-1)
+            decimal.slice(-1)
         );
 
     }
 
+
     return Number(
-        parts[1].slice(-1)
+        text.slice(-1)
     );
+
 }
 
 
 /*
-    Process each real tick
+    Process real tick
 */
 
 function processTick(price) {
@@ -381,20 +720,35 @@ function processTick(price) {
     const digit =
         getLastDigit(price);
 
+
     document.getElementById("price")
         .textContent = price;
+
 
     document.getElementById("lastDigit")
         .textContent = digit;
 
+
+    /*
+        Count digit
+    */
+
     frequency[digit]++;
+
+
+    /*
+        Check Matches
+    */
 
     if (digits.length > 0) {
 
         const previousDigit =
             digits[digits.length - 1];
 
-        if (digit === previousDigit) {
+
+        if (
+            digit === previousDigit
+        ) {
 
             matches++;
 
@@ -404,113 +758,168 @@ function processTick(price) {
 
             currentGap++;
 
-            if (currentGap > maximumGap) {
+
+            if (
+                currentGap >
+                maximumGap
+            ) {
 
                 maximumGap =
                     currentGap;
+
             }
+
         }
+
     }
+
 
     digits.push(digit);
 
+
     /*
-        Keep the most recent 200 ticks
+        Keep last 200 digits
     */
 
-    if (digits.length > 200) {
+    if (
+        digits.length > 200
+    ) {
 
         digits.shift();
+
     }
 
+
     const comparisons =
-        Math.max(digits.length - 1, 1);
+        Math.max(
+            digits.length - 1,
+            1
+        );
+
 
     const percentage =
-        (matches / comparisons) * 100;
+        (
+            matches /
+            comparisons
+        ) * 100;
+
 
     document.getElementById("tickCount")
-        .textContent = digits.length;
+        .textContent =
+        digits.length;
+
 
     document.getElementById("matches")
-        .textContent = matches;
+        .textContent =
+        matches;
+
 
     document.getElementById("matchPercentage")
         .textContent =
         percentage.toFixed(2) + "%";
 
+
     document.getElementById("currentGap")
-        .textContent = currentGap;
+        .textContent =
+        currentGap;
+
 
     document.getElementById("maximumGap")
-        .textContent = maximumGap;
+        .textContent =
+        maximumGap;
+
 
     document.getElementById("recentDigits")
         .textContent =
         digits.join(" ");
 
+
+    /*
+        Update frequency
+    */
+
     for (let i = 0; i <= 9; i++) {
 
-        document.getElementById(`freq-${i}`)
-            .textContent = frequency[i];
+        document.getElementById(
+            "freq-" + i
+        ).textContent =
+        frequency[i];
+
     }
+
 }
 
 
 /*
-    Start live analysis
+    Start analysis
 */
 
 function startAnalysis() {
 
-    const market =
-        document.getElementById("market").value;
+    clearError();
 
-    const marketName =
-        document.getElementById("market")
-        .options[
-            document.getElementById("market").selectedIndex
-        ].text;
+    const select =
+        document.getElementById("market");
+
+    const market =
+        select.value;
+
 
     if (!market) {
 
-        alert("Please select a real Volatility market.");
+        showError(
+            "Please select a real Volatility market."
+        );
 
         return;
+
     }
 
-    if (socket) {
 
-        socket.close();
-    }
+    const marketName =
+        select.options[
+            select.selectedIndex
+        ].text;
+
 
     resetAnalysis();
 
-    document.getElementById("selectedMarket")
-        .textContent = marketName;
+
+    document.getElementById(
+        "selectedMarket"
+    ).textContent =
+        marketName;
+
 
     document.getElementById("status")
         .textContent =
-        "Connecting to the real Deriv market...";
+        "Subscribing to real-time " +
+        marketName +
+        " ticks...";
+
 
     /*
-        The live connection will be added after
-        the real Deriv API connection is verified.
+        Subscribe to REAL Deriv ticks
     */
 
-    alert(
-        "Market selected: " +
-        marketName +
-        "\n\nThe next step is connecting this analyzer to Deriv's live tick feed."
-    );
+    socket.send(JSON.stringify({
+
+        ticks: market,
+
+        subscribe: 1,
+
+        req_id: 2
+
+    }));
+
 }
 
 
 /*
-    Create the initial frequency display
+    Start connection
 */
 
-createFrequencyBoxes();
+connectToDeriv();
 
 </script>
 
